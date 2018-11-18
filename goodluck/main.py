@@ -13,6 +13,16 @@ from goodluck.utils import get_session, Colorblock, LuckLogger, Commander, insta
 from goodluck.text import chinese_log
 
 CARD_TYPE_LIST = ['ALL', '1080', 'M40', 'TITAN X', 'TITAN V', 'K40', 'V100']
+CARD_MAPPING = {
+    'all': 'all',
+    'v': 'TITAN V',
+    'v100': 'V100',
+    'm40': 'M40',
+    '1080': '1080',
+    'k40': 'k40'
+    'xp': 'TITAN X'
+}
+
 
 class Luck:
     def __init__(self):
@@ -38,8 +48,8 @@ class Luck:
 
 
     def get_ssh_command(self, user_cmd, ngpu=1, env=None, exit=True, gpumem=4, card='all', wait=False, virt_env=False):
-        ngpu, card = int(ngpu), str(card)
-        assert card.upper() in CARD_TYPE_LIST, "Please check your card type input. \n \
+        ngpu, card = int(ngpu), CARD_MAPPING[str(card).lower()]
+        assert card in CARD_TYPE_LIST, "Please check your card type input. \n \
                                     Legal inputs are 'all' | '1080' | 'M40' | 'Titan X' | 'Titan V' | 'K40' | 'V100'"
         self.clusterviewr.update()
         node, gpu_idxs, free_nodes = self.allocator.allocate(ngpu, self.clusterviewr.node_gpu_info,
@@ -57,7 +67,7 @@ class Luck:
             env: The environment name you want to source
             exit: Whether to exit the remote node terminal after program ends.
             gpumem: The minimum requirement of your program（Unit is GB)
-            card: 'all' | '1080' | 'M40' | 'Titan X' | 'Titan V' | 'K40' | 'V100'
+            card: 'all' | '1080' | 'm40' | 'xp' | 'v' | 'k40' | 'v100'
             virt_env: If you use virtual env to manage your environment
             v: verbose mode
             vv: more verbose
