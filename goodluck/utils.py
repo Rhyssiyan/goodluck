@@ -4,7 +4,7 @@ from colorama import Fore, Back, Style
 import libtmux
 
 def install_zh_cn():
-    if not isinstance(os.system("which locale-gen"), list): #not installed
+    if os.system("which locale-gen > /dev/null")!=0: #not installed
         os.system("apt-get update")
         os.system("apt-get install -y locales")
         os.system("locale-gen 'zh_CN.UTF-8'")
@@ -94,3 +94,6 @@ class Commander:
         ssh_command = f"ssh -t node{self.node} '{command}'"
         print(ssh_command)
         return ssh_command
+
+
+
