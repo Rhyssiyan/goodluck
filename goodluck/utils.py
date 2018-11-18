@@ -2,6 +2,8 @@ import os
 import sys
 from colorama import Fore, Back, Style
 import libtmux
+from pprint import pprint
+import inspect
 
 def install_zh_cn():
     if os.system("which locale-gen > /dev/null")!=0: #not installed
@@ -48,7 +50,10 @@ class LuckLogger:
     def __init__(self, userinfo):
         self.userinfo = userinfo
 
-    def vinfo(self):
+    def vinfo(self, mapping):
+
+        pprint(mapping)
+
         print("")
 
         print(f"User:{Fore.MAGENTA}{self.userinfo.username}{Style.RESET_ALL}")
@@ -59,6 +64,8 @@ class LuckLogger:
         # nproc
 
     def vvinfo(self, node, gpu_idxs, free_nodes):
+        if node==-1:
+            return
         list_to_str = lambda lst: ",".join([str(item) for item in lst])
         gpu_idxs = list_to_str(gpu_idxs)
         free_nodes = list_to_str(free_nodes)
@@ -71,19 +78,24 @@ class LuckLogger:
 
 class Commander:
 
-    def __init__(self, node, gpu_idxs, user_cmd, env_name, exit):
+    def __init__(self, node, gpu_idxs, user_cmd, env_name, exit, virt_env):
         self.node = node
         self.gpu_idxs = gpu_idxs
         self.user_cmd = user_cmd
         self.env_name = env_name
         self.is_exit = exit
+        self.virt_env = virt_env # Use virtual env if True else conda
         self.cwd = os.getcwd()
 
     def get_command(self):
         command = f"source ~/.zshrc && cd {self.cwd}"
 
         if self.env_name:
-            command += f" && source activate {self.env_name}"
+            if self.virt_env:
+                assert os.path.exists(self.env_name), "The virtual environment doesn't exist"
+                command += f" && source {self.env_name}"
+            else:
+                command += f" && source activate {self.env_name}"
         if len(self.gpu_idxs)>0:
             command += f" && export CUDA_VISIBLE_DEVICES=" + ",".join([str(idx) for idx in self.gpu_idxs])
         command += f" && {self.user_cmd}"

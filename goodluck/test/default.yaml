@@ -4,13 +4,13 @@ Exp_1: #Exp_xx xx is the exp name
     ngpu: 1
     env:
     exit: False
-    min_gpu_mem: 1 #G
-    card_type: 'Titan V'
+    gpumem: 1 #G
+    card: 'Titan V'
 
 Exp_2:
     user_cmd: pwd
     ngpu: 1
     env: l2al
     exit: True
-    min_gpu_mem: 4
-    card_type: 'gtx 1080'
+    gpumem: 4
+    card: 'gtx 1080'

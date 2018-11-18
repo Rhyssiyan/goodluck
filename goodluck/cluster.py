@@ -11,8 +11,6 @@ class ClusterViewer:
         content = requests.get(f"http://10.19.124.11:8899/gpu?id=0").json()  # get gpu info for all nodes
         for info in content:
             name = info['hostname'].replace('compute1','').replace('node','')#leave node no. str
-
-            # free_gpus = get_free_gpu(info['gpus'], min_gpu_mem)
             self.node_gpu_info[name] = info['gpus']
 
 

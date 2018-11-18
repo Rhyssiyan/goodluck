@@ -12,13 +12,14 @@ from goodluck.allocator import Allocator
 from goodluck.utils import get_session, Colorblock, LuckLogger, Commander, install_zh_cn, restore_locale
 from goodluck.text import chinese_log
 
-CARD_TYPE_LIST = ['ALL', 'GTX 1080', 'M40', 'TITAN X', 'TITAN V', 'K40', 'V100']
+CARD_TYPE_LIST = ['ALL', '1080', 'M40', 'TITAN X', 'TITAN V', 'K40', 'V100']
 
 class Luck:
     def __init__(self):
         self.userinfo = UserInfo()
         self.clusterviewr = ClusterViewer()
-        self.allocator = Allocator(self.userinfo.permission)
+        self.logger = LuckLogger(self.userinfo)
+        self.allocator = Allocator(self.userinfo.permission, self.logger)
         self.v = False
         self.vv = False
 
@@ -34,21 +35,20 @@ class Luck:
         if not self.sys_locale:
             restore_locale(self.sys_locale)
 
-        self.logger = LuckLogger(self.userinfo)
 
-    def get_ssh_command(self, user_cmd, ngpu=1, env=None, exit=False, min_gpu_mem=8, card_type='all', wait=False):
-        ngpu = int(ngpu)
-        assert card_type.upper() in CARD_TYPE_LIST, "Please check your card type input. \n \
-                                    Legal inputs are 'all' | 'GTX 1080' | 'M40' | 'Titan X' | 'Titan V' | 'K40' | 'V100'"
+
+    def get_ssh_command(self, user_cmd, ngpu=1, env=None, exit=False, gpumem=4, card='all', wait=False, virt_env=False):
+        ngpu, card = int(ngpu), str(card)
+        assert card.upper() in CARD_TYPE_LIST, "Please check your card type input. \n \
+                                    Legal inputs are 'all' | '1080' | 'M40' | 'Titan X' | 'Titan V' | 'K40' | 'V100'"
         self.clusterviewr.update()
         node, gpu_idxs, free_nodes = self.allocator.allocate(ngpu, self.clusterviewr.node_gpu_info,
-                                                             min_gpu_mem, card_type, wait)
-        # import pdb;pdb.set_trace()
-        if self.vv:
-            self.logger.vvinfo(node, gpu_idxs, free_nodes)
-        return Commander(node, gpu_idxs, user_cmd, env, exit).get_ssh_command()
+                                                             gpumem, card, wait, self.vv)
 
-    def run(self, user_cmd, ngpu=1, env=None, exit=False, min_gpu_mem=8, v=False, vv=False, card_type='all', wait=False):
+        return Commander(node, gpu_idxs, user_cmd, env, exit, virt_env).get_ssh_command()
+
+    def run(self, user_cmd, ngpu=0, env=None, exit=False, gpumem=4, v=False, vv=False,
+            card='all', wait=False, virt_env=False):
         """
 
         Args:
@@ -56,19 +56,33 @@ class Luck:
             ngpu: how much gpu you want to use
             env: The environment name you want to source
             exit: Whether to exit the remote node terminal after program ends.
-            min_gpu_mem: The minimum requirement of your program（Unit is GB)
-            card_type: 'all' | 'GTX 1080' | 'M40' | 'Titan X' | 'Titan V' | 'K40' | 'V100'
+            gpumem: The minimum requirement of your program（Unit is GB)
+            card: 'all' | '1080' | 'M40' | 'Titan X' | 'Titan V' | 'K40' | 'V100'
+            virt_env: If you use virtual env to manage your environment
             v: verbose mode
-
+            vv: more verbose
         Returns:
 
         """
+        mapping = {
+            'user_cmd': user_cmd,
+            'ngpu': ngpu,
+            'env': env,
+            'exit': exit,
+            'gpumem': gpumem,
+            'card': card,
+            'wait': wait,
+            'virt_env': virt_env,
+            'v': v,
+            'vv': vv
+        }
+
         self.v = v
         self.vv = vv
         if self.v or self.vv:
-            self.logger.vinfo()
+            self.logger.vinfo(mapping)
 
-        ssh_command = self.get_ssh_command(user_cmd, ngpu, env, exit, min_gpu_mem, card_type, wait)
+        ssh_command = self.get_ssh_command(user_cmd, ngpu, env, exit, gpumem, card, wait)
         os.system(ssh_command)
 
     def run_yaml(self, cfg='./goodluck/test/default.yaml', name=None, v=False, exit=False, wait=False, vv=False):
