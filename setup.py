@@ -24,7 +24,9 @@ VERSION = goodluck.__version__
 # What packages are required for this module to be executed?
 REQUIRED = [
     'fire',
-    'requests'
+    'requests',
+    'colorama',
+    'pyyaml'
 ]
 
 # What packages are optional?
@@ -102,7 +104,7 @@ setup(
     author_email=EMAIL,
     python_requires=REQUIRES_PYTHON,
     url=URL,
-    packages=find_packages(exclude=('tests',)),
+    packages=['goodluck'],
     # If your package is a single module, use this instead of 'packages':
     # py_modules=['mypackage'],
 
