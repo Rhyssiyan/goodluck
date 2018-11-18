@@ -11,6 +11,8 @@ def install_zh_cn():
         os.system("apt-get install -y locales")
         os.system("locale-gen 'zh_CN.UTF-8'")
         os.system("update-locale LC_ALL='zh_CN.UTF-8'")
+        os.system("source ~/.zshrc")
+
 
 def restore_locale(sys_locale):
     os.system(f"update-locale LC_ALL='{sys_locale}' ")
@@ -51,13 +53,13 @@ class LuckLogger:
         self.userinfo = userinfo
 
     def vinfo(self, mapping):
-
+        print("The config for current run:")
         pprint(mapping)
-
+        print("----------------------------")
         print("")
 
-        print(f"User:{Fore.MAGENTA}{self.userinfo.username}{Style.RESET_ALL}")
-        print(f"Permission:{Fore.MAGENTA}{self.userinfo.permission}{Style.RESET_ALL}")
+        print(f"User: {Fore.MAGENTA}{self.userinfo.username}{Style.RESET_ALL}")
+        print(f"Permission: {Fore.MAGENTA}{self.userinfo.permission}{Style.RESET_ALL}")
 
         # GPU Info
         # free memory

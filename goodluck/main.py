@@ -23,21 +23,21 @@ class Luck:
         self.v = False
         self.vv = False
 
-        self.sys_locale = locale.getlocale()
-        if self.sys_locale[0] and self.sys_locale[1]:
-            self.sys_locale = self.sys_locale[0] + "." + self.sys_locale[1]
-        else:
-            self.sys_locale = None
+        # self.sys_locale = locale.getlocale()
+        # if self.sys_locale[0] and self.sys_locale[1]:
+        #     self.sys_locale = self.sys_locale[0] + "." + self.sys_locale[1]
+        # else:
+        #     self.sys_locale = None
 
         install_zh_cn()
         chinese_log()
 
-        if not self.sys_locale:
-            restore_locale(self.sys_locale)
+        # if not self.sys_locale:
+        #     restore_locale(self.sys_locale)
 
 
 
-    def get_ssh_command(self, user_cmd, ngpu=1, env=None, exit=False, gpumem=4, card='all', wait=False, virt_env=False):
+    def get_ssh_command(self, user_cmd, ngpu=1, env=None, exit=True, gpumem=4, card='all', wait=False, virt_env=False):
         ngpu, card = int(ngpu), str(card)
         assert card.upper() in CARD_TYPE_LIST, "Please check your card type input. \n \
                                     Legal inputs are 'all' | '1080' | 'M40' | 'Titan X' | 'Titan V' | 'K40' | 'V100'"
@@ -47,7 +47,7 @@ class Luck:
 
         return Commander(node, gpu_idxs, user_cmd, env, exit, virt_env).get_ssh_command()
 
-    def run(self, user_cmd, ngpu=0, env=None, exit=False, gpumem=4, v=False, vv=False,
+    def run(self, user_cmd, ngpu=0, env=None, exit=False, gpumem=4, v=True, vv=True,
             card='all', wait=False, virt_env=False):
         """
 
@@ -85,7 +85,7 @@ class Luck:
         ssh_command = self.get_ssh_command(user_cmd, ngpu, env, exit, gpumem, card, wait)
         os.system(ssh_command)
 
-    def run_yaml(self, cfg='./goodluck/test/default.yaml', name=None, v=False, exit=False, wait=False, vv=False):
+    def run_yaml(self, cfg='./goodluck/test/default.yaml', name=None,  exit=True, wait=False, v=True, vv=True):
         self.v = v
         self.vv = vv
         if self.v or self.vv:
