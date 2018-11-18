@@ -5,11 +5,12 @@ import yaml
 import libtmux
 import time
 from colorama import Fore, Back, Style
-
+import locale
+locale.setlocale()
 from goodluck.user import UserInfo
 from goodluck.cluster import ClusterViewer
 from goodluck.allocator import Allocator
-from goodluck.utils import get_session, Colorblock, LuckLogger, Commander
+from goodluck.utils import get_session, Colorblock, LuckLogger, Commander, install_zh_cn
 
 CARD_TYPE_LIST = ['ALL', 'GTX 1080', 'M40', 'TITAN X', 'TITAN V', 'K40', 'V100']
 
@@ -20,8 +21,12 @@ class Luck:
         self.allocator = Allocator(self.userinfo.permission)
         self.v = False
         self.vv = False
-        os.system("export LC_ALL=zh_CN.UTF-8")
-        os.system("export LANG=zh_CN.UTF-8")
+
+        self.sys_locale = locale.getlocale()
+        self.sys_locale = self.sys_locale[0] + "." + self.sys_locale[1]
+
+        install_zh_cn()
+        str = '\t多发paper共建和谐社会, 文明用卡方便你我他!!!'.encode('utf-8')
         with Colorblock(Fore.RED) as color:
             print('\t------------------------------------------')
             print('\t多发paper共建和谐社会, 文明用卡方便你我他!!!')
@@ -29,6 +34,8 @@ class Luck:
             print('\t多发paper共建和谐社会, 文明用卡方便你我他!!!')
             print('\t------------------------------------------')
             print('\n')
+        with Colorblock(Fore.RED) as color:
+
         self.logger = LuckLogger(self.userinfo)
 
     def get_ssh_command(self, user_cmd, ngpu=1, env=None, exit=False, min_gpu_mem=8, card_type='all', wait=False):

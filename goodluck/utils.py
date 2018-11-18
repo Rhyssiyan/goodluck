@@ -3,6 +3,16 @@ import sys
 from colorama import Fore, Back, Style
 import libtmux
 
+def install_zh_cn()
+    if len(os.system("which locale-gen"))==1: #not installed
+        os.system("apt-get update")
+        os.system("apt-get install -y locales")
+        os.system("locale-gen 'zh_CN.UTF-8'")
+        os.system("update-locale LC_ALL='zh_CN.UTF-8'")
+
+def restore_lang(sys_locale):
+    os.system(f"update-locale LC_ALL='{sys_locale}' ")
+
 class Colorblock:
 
     def __init__(self, fore=Fore.BLACK):
