@@ -1,4 +1,4 @@
 # goodluck
 
 ## Installation
-`pip install git+https://github.com/Rhyssiyan/goodluck.git`****
+`pip install git+https://github.com/Rhyssiyan/goodluck.git`
