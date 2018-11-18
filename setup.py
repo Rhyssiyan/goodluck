@@ -26,7 +26,8 @@ REQUIRED = [
     'fire',
     'requests',
     'colorama',
-    'pyyaml'
+    'pyyaml',
+    'libtmux'
 ]
 
 # What packages are optional?

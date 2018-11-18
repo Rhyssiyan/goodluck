@@ -28,13 +28,16 @@ def get_free_gpu(node_gpu_info, banned_gpus, min_gpu_mem=8, card_type='all'):
 class Allocator:
 
 
-    def __init__(self):
+    def __init__(self, permission):
         self.banned_node_gpus = {}
+        self.permission = permission
 
     def get_nodes_gpuinfo(self, node_gpu_infos, min_gpu_mem, card_type='all'):
 
         free_node_gpu_info = {}
         for nodename, node_gpu_info in node_gpu_infos.items():
+            if nodename not in self.permission:
+                continue
             banned_gpus = self.banned_node_gpus.get(nodename, [])
             free_node_gpu_info[nodename] = get_free_gpu(node_gpu_info, banned_gpus, min_gpu_mem, card_type)
         return free_node_gpu_info

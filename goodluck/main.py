@@ -17,9 +17,11 @@ class Luck:
     def __init__(self):
         self.userinfo = UserInfo()
         self.clusterviewr = ClusterViewer()
-        self.allocator = Allocator()
+        self.allocator = Allocator(self.userinfo.permission)
         self.v = False
         self.vv = False
+        os.system("export LC_ALL=zh_CN.UTF-8")
+        os.system("export LANG=zh_CN.UTF-8")
         with Colorblock(Fore.RED) as color:
             print('\t------------------------------------------')
             print('\t多发paper共建和谐社会, 文明用卡方便你我他!!!')
