@@ -6,11 +6,10 @@ import libtmux
 import time
 from colorama import Fore, Back, Style
 import locale
-locale.setlocale()
 from goodluck.user import UserInfo
 from goodluck.cluster import ClusterViewer
 from goodluck.allocator import Allocator
-from goodluck.utils import get_session, Colorblock, LuckLogger, Commander, install_zh_cn
+from goodluck.utils import get_session, Colorblock, LuckLogger, Commander, install_zh_cn, restore_locale
 
 CARD_TYPE_LIST = ['ALL', 'GTX 1080', 'M40', 'TITAN X', 'TITAN V', 'K40', 'V100']
 
@@ -23,7 +22,10 @@ class Luck:
         self.vv = False
 
         self.sys_locale = locale.getlocale()
-        self.sys_locale = self.sys_locale[0] + "." + self.sys_locale[1]
+        if self.sys_locale[0] and self.sys_locale[1]:
+            self.sys_locale = self.sys_locale[0] + "." + self.sys_locale[1]
+        else:
+            self.sys_locale = None
 
         install_zh_cn()
         str = '\t多发paper共建和谐社会, 文明用卡方便你我他!!!'.encode('utf-8')
@@ -34,7 +36,9 @@ class Luck:
             print('\t多发paper共建和谐社会, 文明用卡方便你我他!!!')
             print('\t------------------------------------------')
             print('\n')
-        with Colorblock(Fore.RED) as color:
+
+        if not self.sys_locale:
+            restore_locale()
 
         self.logger = LuckLogger(self.userinfo)
 

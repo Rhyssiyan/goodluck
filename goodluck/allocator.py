@@ -1,5 +1,6 @@
 import os
 import copy
+import time
 
 def get_free_gpu(node_gpu_info, banned_gpus, min_gpu_mem=8, card_type='all'):
     """Determine which gpus are free in the current node
