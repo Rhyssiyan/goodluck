@@ -66,7 +66,6 @@ class Allocator:
         if allocated_node not in self.banned_node_gpus:
             self.banned_node_gpus[allocated_node] = []
         self.banned_node_gpus[allocated_node].extend(allocated_gpus)
-
         return allocated_node, allocated_gpus, free_nodes
 
     def allocate(self, ngpu, node_gpu_infos, min_gpu_mem, card_type='all', wait=False):

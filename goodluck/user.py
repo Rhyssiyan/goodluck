@@ -18,7 +18,7 @@ def get_permission_info(username):
     for info in content['permission']:
         name = info['name']
         if 'node' in name:
-            node = int(name[4:])
+            node = name[4:]
             permissions.append(node)
 
     return permissions

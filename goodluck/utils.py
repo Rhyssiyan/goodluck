@@ -49,8 +49,10 @@ class LuckLogger:
         self.userinfo = userinfo
 
     def vinfo(self):
-        print(f"User:{self.userinfo.username}")
-        print(f"Permission:{self.userinfo.permission}")
+        print("")
+
+        print(f"User:{Fore.MAGENTA}{self.userinfo.username}{Style.RESET_ALL}")
+        print(f"Permission:{Fore.MAGENTA}{self.userinfo.permission}{Style.RESET_ALL}")
 
         # GPU Info
         # free memory

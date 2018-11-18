@@ -10,6 +10,7 @@ from goodluck.user import UserInfo
 from goodluck.cluster import ClusterViewer
 from goodluck.allocator import Allocator
 from goodluck.utils import get_session, Colorblock, LuckLogger, Commander, install_zh_cn, restore_locale
+from goodluck.text import chinese_log
 
 CARD_TYPE_LIST = ['ALL', 'GTX 1080', 'M40', 'TITAN X', 'TITAN V', 'K40', 'V100']
 
@@ -28,10 +29,10 @@ class Luck:
             self.sys_locale = None
 
         install_zh_cn()
-
+        chinese_log()
 
         if not self.sys_locale:
-            restore_locale()
+            restore_locale(self.sys_locale)
 
         self.logger = LuckLogger(self.userinfo)
 
