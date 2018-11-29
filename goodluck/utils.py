@@ -29,6 +29,8 @@ class Colorblock:
         print(f"{Style.RESET_ALL}")
 
 
+def log_with_color(text, fore=Fore.BLACK, end="\n"):
+    print(f"{fore}{text}{Style.RESET_ALL}", end=end)
 
 def get_session(server, session_name):
     # Get session
@@ -73,10 +75,24 @@ class LuckLogger:
         free_nodes = list_to_str(free_nodes)
         print(f"Your program will run on gpu{Fore.MAGENTA}{gpu_idxs}{Style.RESET_ALL} of node{Fore.MAGENTA}{node}{Style.RESET_ALL}")
         print(f"The nodes that satisfy the requirement of your program are: ", end="")
-        with Colorblock(fore=Fore.YELLOW):
-            print(f"{free_nodes}")
+        log_with_color(free_nodes, Fore.YELLOW)
+
+    def watch_free_node_info(self, free_nodes, node_with_max_gpu, max_n_gpu, nodes_gpu_type):
+        list_to_str = lambda lst: ",".join([str(item) for item in lst])
+        free_node_list = list_to_str(free_nodes.keys())
+
+        print(f"There are {Fore.GREEN}{len(free_nodes)}{Style.RESET_ALL} free nodes in total.")
+        print(f"Free node list:", end="")
+        log_with_color(free_node_list, Fore.YELLOW)
+
+        for nodei, free_gpus in free_nodes.items():
+            free_gpus = list_to_str(free_gpus)
+            print(f"For node{nodei}: free gpus are ", end="")
+            log_with_color(nodes_gpu_type[nodei], Fore.GREEN, end="")
+            log_with_color(", " + free_gpus, Fore.CYAN)
 
 
+        print(f"Now, the node with max free gpu is node{node_with_max_gpu} having {max_n_gpu} gpu")
 
 class Commander:
 
@@ -105,11 +121,32 @@ class Commander:
             command += " ;zsh"
         return command
 
-    def get_ssh_command(self):
+
+class AICommander(Commander):
+
+    def __init__(self, node, gpu_idxs, user_cmd, env_name, exit, virt_env):
+        super(AICommander, self).__init__(node, gpu_idxs, user_cmd, env_name, exit, virt_env)
+
+    def get_full_command(self):
+        """ssh command to make command run on specified node
+
+        Returns:
+
+        """
         command = self.get_command()
         ssh_command = f"ssh -t node{self.node} '{command}'"
-        print(ssh_command)
         return ssh_command
 
 
+class P40Commander(Commander):
 
+    def __init__(self, node, gpu_idxs, user_cmd, env_name, exit, virt_env):
+        super(P40Commander, self).__init__(node, gpu_idxs, user_cmd, env_name, exit, virt_env)
+
+    def get_full_command(self):
+        """Make Command Run on specified node
+
+        Returns:
+
+        """
+        os.path.exists("~/socat")

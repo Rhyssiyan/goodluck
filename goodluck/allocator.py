@@ -14,7 +14,7 @@ def get_free_gpu(node_gpu_info, banned_gpus, gpumem=4, card='all'):
     free_gpus = []
     for gpu in node_gpu_info:
         gpu_index = int(gpu['index'])
-        if card!='all' and card not in gpu['name']:
+        if card.lower()!='all' and card not in gpu['name']:
             continue
         if gpu_index in banned_gpus:
             continue
@@ -52,12 +52,12 @@ class Allocator:
             node_gpu_info: {node: free_gpus} such as 1: [0,1,2,3]
             gpumem:
         Returns:
-
+            free_nodes: dict node_i: free_gpus such as 01: 0,1,2,3
         """
         allocated_node = -1
         node_with_max_gpu, max_n_gpu = -1, 0
         allocated_gpus = []
-        free_nodes = []
+        free_nodes = {}
 
         node_gpu_info = self.get_nodes_gpuinfo(node_gpu_infos, gpumem, card)
 
@@ -66,7 +66,7 @@ class Allocator:
             if len(free_gpus) >= ngpu:
                 allocated_node = nodei
                 allocated_gpus = free_gpus[:ngpu]
-                free_nodes.append(nodei)
+                free_nodes[nodei] = free_gpus
 
             if len(free_gpus) > max_n_gpu:
                 max_n_gpu = len(free_gpus)
@@ -77,7 +77,7 @@ class Allocator:
 
         if allocated_node not in self.banned_node_gpus:
             self.banned_node_gpus[allocated_node] = []
-        self.banned_node_gpus[allocated_node].extend(allocated_gpus)
+            self.banned_node_gpus[allocated_node].extend(allocated_gpus)
         return allocated_node, allocated_gpus, free_nodes, node_with_max_gpu, max_n_gpu
 
     def allocate(self, ngpu, node_gpu_infos, gpumem, card='all', wait=False, vv=False):
@@ -87,10 +87,11 @@ class Allocator:
             if vv:
                 self.logger.vvinfo(node, gpu_idxs, free_nodes)
             if node!=-1:
-                return node, gpu_idxs, free_nodes
+                return node, gpu_idxs
             else:
                 print(f"Now, the node with max free gpu is node{node_with_max_gpu} having {max_n_gpu}gpu")
             if not wait:
                 sys.exit(1)
             print(f"Cluster is busy. There are no node having {ngpu} cards. Wait!")
             time.sleep(60)
+
