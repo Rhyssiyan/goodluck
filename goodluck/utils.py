@@ -121,32 +121,13 @@ class Commander:
             command += " ;zsh"
         return command
 
-
-class AICommander(Commander):
-
-    def __init__(self, node, gpu_idxs, user_cmd, env_name, exit, virt_env):
-        super(AICommander, self).__init__(node, gpu_idxs, user_cmd, env_name, exit, virt_env)
-
-    def get_full_command(self):
+    def get_ssh_command(self):
         """ssh command to make command run on specified node
 
-        Returns:
+                Returns:
 
-        """
+                """
         command = self.get_command()
         ssh_command = f"ssh -t node{self.node} '{command}'"
         return ssh_command
 
-
-class P40Commander(Commander):
-
-    def __init__(self, node, gpu_idxs, user_cmd, env_name, exit, virt_env):
-        super(P40Commander, self).__init__(node, gpu_idxs, user_cmd, env_name, exit, virt_env)
-
-    def get_full_command(self):
-        """Make Command Run on specified node
-
-        Returns:
-
-        """
-        os.path.exists("~/socat")
