@@ -29,8 +29,8 @@ class Colorblock:
         print(f"{Style.RESET_ALL}")
 
 
-def log_with_color(text, fore=Fore.BLACK, end="\n"):
-    print(f"{fore}{text}{Style.RESET_ALL}", end=end)
+def log_with_color(text, fore=Fore.BLACK, style=Style.NORMAL, end="\n"):
+    print(f"{fore}{style}{text}{Style.RESET_ALL}", end=end)
 
 def get_session(server, session_name):
     # Get session
@@ -73,17 +73,21 @@ class LuckLogger:
         list_to_str = lambda lst: ",".join([str(item) for item in lst])
         gpu_idxs = list_to_str(gpu_idxs)
         free_nodes = list_to_str(free_nodes)
-        print(f"Your program will run on gpu{Fore.MAGENTA}{gpu_idxs}{Style.RESET_ALL} of node{Fore.MAGENTA}{node}{Style.RESET_ALL}")
+        print("")
+        print(f"Your program will run on gpu{Fore.YELLOW}{gpu_idxs}{Style.RESET_ALL} of node{Fore.YELLOW}{node}{Style.RESET_ALL}")
         print(f"The nodes that satisfy the requirement of your program are: ", end="")
         log_with_color(free_nodes, Fore.YELLOW)
 
-    def watch_free_node_info(self, free_nodes, node_with_max_gpu, max_n_gpu, nodes_gpu_type):
+    def watch_free_node_info(self, free_nodes, node_with_max_gpu, max_n_gpu, nodes_gpu_type, total_gpus):
         list_to_str = lambda lst: ",".join([str(item) for item in lst])
         free_node_list = list_to_str(free_nodes.keys())
 
         print(f"There are {Fore.GREEN}{len(free_nodes)}{Style.RESET_ALL} free nodes in total.")
-        print(f"Free node list:", end="")
+        print(f"There are {Fore.GREEN}{sum([len(gpus) for gpus in free_nodes.values()])}/{total_gpus}{Style.RESET_ALL} free gpus in total.")
+
+        print(f"\nFree node list: ", end="")
         log_with_color(free_node_list, Fore.YELLOW)
+        print("")
 
         for nodei, free_gpus in free_nodes.items():
             free_gpus = list_to_str(free_gpus)
@@ -92,7 +96,7 @@ class LuckLogger:
             log_with_color(", " + free_gpus, Fore.CYAN)
 
 
-        print(f"Now, the node with max free gpu is node{node_with_max_gpu} having {max_n_gpu} gpu")
+        print(f"\nNow, the node with max free gpu is node{node_with_max_gpu} having {max_n_gpu} gpu")
 
 class Commander:
 

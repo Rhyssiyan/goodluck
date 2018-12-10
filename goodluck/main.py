@@ -9,7 +9,7 @@ import locale
 from goodluck.user import UserInfo
 from goodluck.cluster import AIClusterViewer, P40ClusterViewer
 from goodluck.allocator import Allocator
-from goodluck.utils import get_session, Colorblock, LuckLogger, Commander, install_zh_cn, restore_locale
+from goodluck.utils import get_session, Colorblock, LuckLogger, Commander, install_zh_cn, restore_locale,log_with_color
 from goodluck.text import chinese_log
 
 CARD_TYPE_LIST = ['ALL', '1080', 'M40', 'TITAN X', 'TITAN V', 'K40', 'V100', 'P40']
@@ -53,7 +53,9 @@ class Luck:
         node, gpu_idxs = self.get_allocated_node(ngpu, env, gpumem, card, wait)
         command = Commander(node, gpu_idxs, user_cmd, env, exit, virt_env).get_ssh_command()
         if self.v:
-            print(command)
+            print("\nThe full command is:")
+            log_with_color(command, Fore.YELLOW)
+            print("")
         return command
 
     def run(self, user_cmd, ngpu=1, env=None, exit=False, gpumem=4, v=True, vv=True,
@@ -126,13 +128,13 @@ class Luck:
             time.sleep(5)
             server.kill_session(session_name)
 
-    def watch(self, gpumem=4, card='all'):
+    def watch(self, ngpu=1, gpumem=0, card='all'):
         card = check_and_convert_card(card)
         self.clusterviewr.update()
-        node, gpu_idxs, free_nodes, node_with_max_gpu, max_n_gpu = self.allocator.allocate_node(1, self.clusterviewr.node_gpu_info, gpumem, card)
-        self.logger.watch_free_node_info(free_nodes, node_with_max_gpu, max_n_gpu, self.clusterviewr.nodes_gpu_type)
+        node, gpu_idxs, free_nodes, node_with_max_gpu, max_n_gpu, total_gpus = self.allocator.allocate_node(ngpu, self.clusterviewr.node_gpu_info, gpumem, card)
+        self.logger.watch_free_node_info(free_nodes, node_with_max_gpu, max_n_gpu, self.clusterviewr.nodes_gpu_type, total_gpus)
 
-    def p40_watch(self, gpumem=4, card='all'):
+    def p40_watch(self, gpumem=0, card='all'):
         self.clusterviewr = P40ClusterViewer()
         self.watch()
 
