@@ -5,6 +5,14 @@ import libtmux
 from pprint import pprint
 import inspect
 
+def install_requirements():
+    install_ascii_packages()
+    install_zh_cn()
+
+def install_ascii_packages():
+    if os.system("which cowsay > /dev/null")!=0:
+        os.system("apt-get install -y cowsay")
+
 def install_zh_cn():
     if os.system("which locale-gen > /dev/null")!=0: #not installed
         os.system("apt-get update")

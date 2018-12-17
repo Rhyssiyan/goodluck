@@ -9,7 +9,7 @@ import locale
 from goodluck.user import UserInfo
 from goodluck.cluster import AIClusterViewer, P40ClusterViewer
 from goodluck.allocator import Allocator
-from goodluck.utils import get_session, Colorblock, LuckLogger, Commander, install_zh_cn, restore_locale,log_with_color
+from goodluck.utils import get_session, Colorblock, LuckLogger, Commander, install_requirements, restore_locale,log_with_color
 from goodluck.text import chinese_log
 
 CARD_TYPE_LIST = ['ALL', '1080', 'M40', 'TITAN X', 'TITAN V', 'K40', 'V100', 'P40']
@@ -38,19 +38,20 @@ class Luck:
         self.logger = LuckLogger(self.userinfo)
         self.allocator = Allocator(self.userinfo.permission, self.logger)
 
-        install_zh_cn()
+        install_requirements()
+
         chinese_log()
         self.v = False
         self.vv = False
 
-    def get_allocated_node(self, ngpu=1, env=None, gpumem=4, card='all', wait=False):
+    def get_allocated_node(self, ngpu=1, env=None, gpumem=4, card='all', wait=False, specified_node=None):
         self.clusterviewr.update()
-        node, gpu_idxs = self.allocator.allocate(ngpu, self.clusterviewr.node_gpu_info, gpumem, card, wait, self.vv)
+        node, gpu_idxs = self.allocator.allocate(ngpu, self.clusterviewr.node_gpu_info, gpumem, card, wait, self.vv, specified_node)
         return node, gpu_idxs
 
-    def get_command(self, user_cmd, ngpu=1, env=None, exit=True, gpumem=4, card='all', wait=False, virt_env=False):
+    def get_command(self, user_cmd, ngpu=1, env=None, exit=True, gpumem=4, card='all', wait=False, virt_env=False, specified_node=None):
 
-        node, gpu_idxs = self.get_allocated_node(ngpu, env, gpumem, card, wait)
+        node, gpu_idxs = self.get_allocated_node(ngpu, env, gpumem, card, wait, specified_node)
         command = Commander(node, gpu_idxs, user_cmd, env, exit, virt_env).get_ssh_command()
         if self.v:
             print("\nThe full command is:")
@@ -59,7 +60,7 @@ class Luck:
         return command
 
     def run(self, user_cmd, ngpu=1, env=None, exit=False, gpumem=4, v=True, vv=True,
-            card='all', wait=False, virt_env=False):
+            card='all', wait=False, virt_env=False, node=None, force=False):
         """
 
         Args:
@@ -72,9 +73,15 @@ class Luck:
             virt_env: If you use virtual env to manage your environment
             v: verbose mode
             vv: more verbose
+            node: the node you specify to run. like 01,02,03,...
         Returns:
 
         """
+        self.allocator.force = force
+
+        node = str(node) if isinstance(node, int) else node
+        assert not node or len(node)==2, "Node Format is wrong. Like 01, 02, ..., 34"
+
         card = check_and_convert_card(card)
         mapping = {
             'user_cmd': user_cmd,
@@ -85,8 +92,10 @@ class Luck:
             'card': card,
             'wait': wait,
             'virt_env': virt_env,
+            'node': node,
             'v': v,
-            'vv': vv
+            'vv': vv,
+            'force': force,
         }
 
         self.v = v
@@ -94,7 +103,7 @@ class Luck:
         if self.v or self.vv:
             self.logger.vinfo(mapping)
 
-        ssh_command = self.get_command(user_cmd, ngpu, env, exit, gpumem, card, wait)
+        ssh_command = self.get_command(user_cmd, ngpu, env, exit, gpumem, card, wait, virt_env, node)
 
         os.system(ssh_command)
 
