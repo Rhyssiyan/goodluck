@@ -166,7 +166,14 @@ class Luck:
     def wrap(self, cmd='', exit=False, env=None, virt_env=False):
 
         server = libtmux.Server()
-        session_name = cmd.split(' ')[0] + '_' + datetime.now().strftime("%Y-%m-%d_%H_%M_%S")
+
+        # Summarize cmd to get the session name
+        cmd_name = cmd
+        if ';' in cmd_name:
+            cmd_name = cmd_name.split(';')[-1]
+        else:
+            cmd_name = cmd_name
+        session_name = cmd_name.split(' ')[0] + '_' + datetime.now().strftime("%Y-%m-%d_%H_%M_%S")
         print(f"Session name: {session_name}")
         log_with_color(f"tmux attach -t {session_name}", fore=Fore.YELLOW)
         session = get_session(server, session_name)
