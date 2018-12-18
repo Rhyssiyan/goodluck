@@ -42,18 +42,13 @@ def log_with_color(text, fore=Fore.BLACK, style=Style.NORMAL, end="\n"):
 
 def get_session(server, session_name):
     # Get session
-    if not server.find_where({'session_name': session_name}):
+    try:
         session = server.new_session(session_name=session_name)
-
-    else:
+    except libtmux.exc.TmuxSessionExists as e:
         with Colorblock(Fore.RED):
             print("\nDon't support append window in existing session! Please change your session name.")
         sys.exit(1)
-        # session = server.find_where({'session_name': session_name})
-        # is_yes = input(prompt=f"{session_name} exists. Do you still want to append window on this session? Y(y)/N(n)")
-        # assert is_yes.lower() in ['y', 'n']
-        # if is_yes not in ['y', 'Y']:
-        #     print("Please change your session name.")
+
     return session
 
 
@@ -118,28 +113,32 @@ class Commander:
         self.cwd = os.getcwd()
 
     def get_command(self):
-        command = f"source ~/.zshrc && cd {self.cwd}"
+        prefix_command = f"source ~/.zshrc && cd {self.cwd}"
 
-        if self.env_name:
-            if self.virt_env:
-                assert os.path.exists(self.env_name), "The virtual environment doesn't exist"
-                command += f" && source {self.env_name}"
-            else:
-                command += f" && source activate {self.env_name}"
+        command = ''
         if len(self.gpu_idxs)>0:
-            command += f" && export CUDA_VISIBLE_DEVICES=" + ",".join([str(idx) for idx in self.gpu_idxs])
-        command += f" && {self.user_cmd}"
-        if not self.is_exit:
-            command += " ;zsh"
-        return command
+            command += f"export CUDA_VISIBLE_DEVICES=" + ",".join([str(idx) for idx in self.gpu_idxs])
+        command += f" ;{self.user_cmd}"
+        # if not self.is_exit:
+        #     command += " ;zsh"
+
+        wraped_command = f"""{prefix_command} && goodluck wrap "{command}" """#Wrap command with tmux
+        if self.is_exit:
+            wraped_command += ' --exit '
+        if self.env_name:
+            wraped_command += f' --env {self.env_name} '
+        if self.virt_env:
+            wraped_command += f' --virt_env'
+        return wraped_command
+
 
     def get_ssh_command(self):
         """ssh command to make command run on specified node
+        Returns:
 
-                Returns:
-
-                """
+        """
         command = self.get_command()
+        print(command)
         ssh_command = f"ssh -t node{self.node} '{command}'"
         return ssh_command
 

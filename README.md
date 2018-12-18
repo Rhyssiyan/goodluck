@@ -30,8 +30,11 @@ Common parameters:
 * See free nodes with TITAN V: ``goodluck watch --card 'v'``
 
 4. Observe what nodes are free in P40 Cluster
-
 ``goodluck p40_watch``
+5. Wrap your program with tmux 
+* Only wrap with tmux ``goodluck wrap``
+* Wrap your command ``goodluck wrap 'nvidia-smi' --env xxx``
+
 
 ## Caution:
 * 不要在你的command中再指定显卡, i.e. CUDA_VISIBLE_DEVICES=xx

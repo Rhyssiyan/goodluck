@@ -95,18 +95,14 @@ class Allocator:
             self.banned_node_gpus[allocated_node].extend(allocated_gpus)
         return allocated_node, allocated_gpus, free_nodes, node_with_max_gpu, max_n_gpu, total_qualified_gpu
 
-    def allocate(self, ngpu, node_gpu_infos, gpumem, card='all', wait=False, vv=False, specified_node=None):
+    def allocate(self, ngpu, node_gpu_infos, gpumem, card='all', vv=False, specified_node=None):
+        node, gpu_idxs, free_nodes, node_with_max_gpu, max_n_gpu, _  = self.allocate_node(ngpu, node_gpu_infos, gpumem, card, specified_node)
 
-        while True:
-            node, gpu_idxs, free_nodes, node_with_max_gpu, max_n_gpu, _  = self.allocate_node(ngpu, node_gpu_infos, gpumem, card, specified_node)
-            if vv:
-                self.logger.vvinfo(node, gpu_idxs, free_nodes)
-            if node!=-1:
-                return node, gpu_idxs
-            else:
-                print(f"Now, the node with max free gpu is node{node_with_max_gpu} having {max_n_gpu}gpu")
-            if not wait:
-                sys.exit(1)
-            print(f"Cluster is busy. There are no node having {ngpu} cards. Wait!")
-            time.sleep(60)
+        if vv:
+            self.logger.vvinfo(node, gpu_idxs, free_nodes)
+        if node==-1:
+            print(f"Now, the node with max free gpu is node{node_with_max_gpu} having {max_n_gpu}gpu")
+            return -1, None
+        else:
+            return node, gpu_idxs
 

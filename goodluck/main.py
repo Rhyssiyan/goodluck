@@ -4,8 +4,11 @@ import os
 import yaml
 import libtmux
 import time
+from datetime import datetime
 from colorama import Fore, Back, Style
 import locale
+import sys
+
 from goodluck.user import UserInfo
 from goodluck.cluster import AIClusterViewer, P40ClusterViewer
 from goodluck.allocator import Allocator
@@ -40,14 +43,23 @@ class Luck:
 
         install_requirements()
 
-        chinese_log()
+        # chinese_log()
         self.v = False
         self.vv = False
 
     def get_allocated_node(self, ngpu=1, env=None, gpumem=4, card='all', wait=False, specified_node=None):
-        self.clusterviewr.update()
-        node, gpu_idxs = self.allocator.allocate(ngpu, self.clusterviewr.node_gpu_info, gpumem, card, wait, self.vv, specified_node)
-        return node, gpu_idxs
+        while True:
+            self.clusterviewr.update()
+            node, gpu_idxs = self.allocator.allocate(ngpu, self.clusterviewr.node_gpu_info, gpumem, card, self.vv,
+                                                     specified_node)
+            if node==-1:
+                if not wait:
+                    sys.exit(1)
+                print(f"Cluster is busy. There are no node having {ngpu} cards. Wait!")
+                time.sleep(3)
+            else:
+
+                return node, gpu_idxs
 
     def get_command(self, user_cmd, ngpu=1, env=None, exit=True, gpumem=4, card='all', wait=False, virt_env=False, specified_node=None):
 
@@ -105,6 +117,8 @@ class Luck:
 
         ssh_command = self.get_command(user_cmd, ngpu, env, exit, gpumem, card, wait, virt_env, node)
 
+        #Tmux protection
+
         os.system(ssh_command)
 
     def run_yaml(self, cfg='./goodluck/test/default.yaml', name=None,  exit=True, wait=False, v=True, vv=True):
@@ -138,14 +152,49 @@ class Luck:
             server.kill_session(session_name)
 
     def watch(self, ngpu=1, gpumem=0, card='all'):
+        chinese_log()
         card = check_and_convert_card(card)
         self.clusterviewr.update()
         node, gpu_idxs, free_nodes, node_with_max_gpu, max_n_gpu, total_gpus = self.allocator.allocate_node(ngpu, self.clusterviewr.node_gpu_info, gpumem, card)
         self.logger.watch_free_node_info(free_nodes, node_with_max_gpu, max_n_gpu, self.clusterviewr.nodes_gpu_type, total_gpus)
 
     def p40_watch(self, gpumem=0, card='all'):
+        chinese_log()
         self.clusterviewr = P40ClusterViewer()
         self.watch()
+
+    def wrap(self, cmd='', exit=False, env=None, virt_env=False):
+
+        server = libtmux.Server()
+        session_name = cmd.split(' ')[0] + '_' + datetime.now().strftime("%Y-%m-%d_%H_%M_%S")
+        print(f"Session name: {session_name}")
+        log_with_color(f"tmux attach -t {session_name}", fore=Fore.YELLOW)
+        session = get_session(server, session_name)
+        session.set_option("status", "off")
+
+        pane = session.attached_pane
+
+        if env:
+            if virt_env:
+                assert os.path.exists(env), "The virtual environment doesn't exist"
+                pane.send_keys('source {self.env}')
+            else:
+                pane.send_keys(f"source activate {env}")
+
+        if len(cmd)>0:
+            python_cmd = f"""goodluck run_program '{cmd}' """
+            pane.send_keys(python_cmd)
+
+        if exit:
+            pane.send_keys("exit")
+        else:
+            os.system("unset TMUX")
+            os.system(f"tmux attach -t {session_name}")
+
+    def run_program(self, cmd=''):
+        chinese_log()
+        # import pdb;pdb.set_trace()
+        os.system(cmd)
 
 if __name__ == '__main__':
     runner = Luck()
