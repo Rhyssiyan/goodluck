@@ -188,8 +188,7 @@ class Luck:
         if exit:
             pane.send_keys("exit")
         else:
-            os.system("unset TMUX")
-            os.system(f"tmux attach -t {session_name}")
+            os.system(f"unset TMUX;tmux attach -t {session_name}")
 
     def run_program(self, cmd=''):
         chinese_log()
