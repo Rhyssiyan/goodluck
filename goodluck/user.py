@@ -13,6 +13,7 @@ def get_username():
 
 
 def get_permission_info(username):
+    username = username.split('-')[0]
     content = requests.get(f"http://10.19.124.11:8899/permission?username={username}").json()
     permissions = []
     for info in content['permission']:
