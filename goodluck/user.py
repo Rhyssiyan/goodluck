@@ -9,7 +9,7 @@ class UserInfo:
 
 
 def get_username():
-    return platform.node().strip().split('_')[0]
+    return platform.node().strip().split('-')[0]
 
 
 def get_permission_info(username):
