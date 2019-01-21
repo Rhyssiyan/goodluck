@@ -15,24 +15,37 @@ from goodluck.allocator import Allocator
 from goodluck.utils import get_session, Colorblock, LuckLogger, Commander, install_requirements, restore_locale,log_with_color
 from goodluck.text import chinese_log
 
-CARD_TYPE_LIST = ['ALL', '1080', 'M40', 'TITAN X', 'TITAN V', 'K40', 'V100', 'P40']
+CARD_TYPE_LIST = ['ALL', '1080', 'M40', 'TITAN X', 'TITAN V', 'K', 'V100', 'P40']
+CARD_SET = {'1080', 'M40', 'TITAN X', 'TITAN V', 'K', 'V100', 'P40'}
 CARD_MAPPING = {
     'all': 'ALL',
     'v': 'TITAN V',
     'v100': 'V100',
-    'm40': 'M40',
+    'm': 'M40',
     '1080': '1080',
-    'k40': 'k40',
+    'k': 'K',
     'xp': 'TITAN X',
     'p40': 'P40',
 }
 
-def check_and_convert_card(card):
-    card = CARD_MAPPING[str(card).lower()]
-    assert card in CARD_TYPE_LIST, "Please check your card type input. \n \
-                                                Legal inputs are 'all' | '1080' | 'm40' | 'xp' | 'v' | 'k40' | 'v100' | 'p40'"
-    return card
-
+def check_and_convert_card(cards):
+    legal_cards = set()
+    for c in cards.split(','):
+        if c.startswith('-'):
+            c = CARD_MAPPING[c[1:]]
+            legal_cards -= set([c])
+        else:
+            if c == 'all':
+                tmp_card_set = CARD_SET
+            else:
+                c = CARD_MAPPING[c]
+                tmp_card_set = set([c])
+            assert c.upper() in CARD_TYPE_LIST, "Please check your card type input. \n \
+                            Legal inputs are 'all' | '1080' | 'm' | 'xp' | 'v' | 'k' | 'v100' | 'p40'"
+            legal_cards |= tmp_card_set
+    return legal_cards
+    # card = CARD_MAPPING[str(card).lower()]
+    # return card
 
 class Luck:
     def __init__(self):
@@ -47,7 +60,7 @@ class Luck:
         self.v = False
         self.vv = False
 
-    def get_allocated_node(self, ngpu=1, env=None, gpumem=4, card='all', wait=False, specified_node=None):
+    def get_allocated_node(self, ngpu=1, env=None, gpumem=4, card=CARD_SET, wait=False, specified_node=None):
         while True:
             self.clusterviewr.update()
             node, gpu_idxs = self.allocator.allocate(ngpu, self.clusterviewr.node_gpu_info, gpumem, card, self.vv,
@@ -61,7 +74,7 @@ class Luck:
 
                 return node, gpu_idxs
 
-    def get_command(self, user_cmd, ngpu=1, env=None, exit=True, gpumem=4, card='all', wait=False, virt_env=False, specified_node=None):
+    def get_command(self, user_cmd, ngpu=1, env=None, exit=True, gpumem=4, card=CARD_SET, wait=False, virt_env=False, specified_node=None):
 
         node, gpu_idxs = self.get_allocated_node(ngpu, env, gpumem, card, wait, specified_node)
         command = Commander(node, gpu_idxs, user_cmd, env, exit, virt_env).get_ssh_command()
@@ -81,7 +94,8 @@ class Luck:
             env: The environment name you want to source
             exit: Whether to exit the remote node terminal after program ends.
             gpumem: The minimum requirement of your program（Unit is GB)
-            card: 'all' | '1080' | 'm40' | 'xp' | 'v' | 'k40' | 'v100' | 'p40'
+            card: 'all' | '1080' | 'm' | 'xp' | 'v' | 'k' | 'v100' | 'p40'
+                support 'all,-k'
             virt_env: If you use virtual env to manage your environment
             v: verbose mode
             vv: more verbose
@@ -151,17 +165,17 @@ class Luck:
             time.sleep(5)
             server.kill_session(session_name)
 
-    def watch(self, ngpu=1, gpumem=0, card='all'):
-        chinese_log()
+    def watch(self, ngpu=1, gpumem=0, card='all', noicon=False):
+        if not noicon:
+            chinese_log()
         card = check_and_convert_card(card)
         self.clusterviewr.update()
         node, gpu_idxs, free_nodes, node_with_max_gpu, max_n_gpu, total_gpus = self.allocator.allocate_node(ngpu, self.clusterviewr.node_gpu_info, gpumem, card)
         self.logger.watch_free_node_info(free_nodes, node_with_max_gpu, max_n_gpu, self.clusterviewr.nodes_gpu_type, total_gpus)
 
-    def p40_watch(self, gpumem=0, card='all'):
-        chinese_log()
+    def p40_watch(self, gpumem=0, card='all', noicon=False):
         self.clusterviewr = P40ClusterViewer()
-        self.watch()
+        self.watch(noicon=noicon)
 
     def wrap(self, cmd='', exit=False, env=None, virt_env=False):
 

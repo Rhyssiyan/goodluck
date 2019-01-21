@@ -3,7 +3,7 @@ import copy
 import time
 import sys
 
-def get_gpus(node_gpu_info, banned_gpus, gpumem=4, card='all', free_flag=True):
+def get_gpus(node_gpu_info, banned_gpus, gpumem, cards, free_flag=True):
     """Determine which gpus are free in the current node
 
     :param gpu_info:
@@ -15,8 +15,7 @@ def get_gpus(node_gpu_info, banned_gpus, gpumem=4, card='all', free_flag=True):
     free_gpus = []
     for gpu in node_gpu_info:
         gpu_index = int(gpu['index'])
-
-        if card.lower()!='all' and card not in gpu['name']:
+        if all([card not in gpu['name'] for card in cards]):
             continue
         if free_flag and gpu_index in banned_gpus:
             continue
@@ -86,16 +85,18 @@ class Allocator:
             if len(free_gpus) > max_n_gpu:
                 max_n_gpu = len(free_gpus)
                 node_with_max_gpu = nodei
+
         if specified_node and allocated_node != specified_node:
-            print(f"The node is not satisfied your requirement ")
-            sys.exit(0)
+            # print(f"The node is not satisfied your requirement ")
+            # sys.exit(0)
+            allocated_node = -1
 
         if allocated_node not in self.banned_node_gpus:
             self.banned_node_gpus[allocated_node] = []
             self.banned_node_gpus[allocated_node].extend(allocated_gpus)
         return allocated_node, allocated_gpus, free_nodes, node_with_max_gpu, max_n_gpu, total_qualified_gpu
 
-    def allocate(self, ngpu, node_gpu_infos, gpumem, card='all', vv=False, specified_node=None):
+    def allocate(self, ngpu, node_gpu_infos, gpumem, card, vv=False, specified_node=None):
         node, gpu_idxs, free_nodes, node_with_max_gpu, max_n_gpu, _  = self.allocate_node(ngpu, node_gpu_infos, gpumem, card, specified_node)
 
         if vv:
