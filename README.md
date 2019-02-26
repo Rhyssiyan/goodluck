@@ -28,7 +28,8 @@ Common parameters:
 
 * See all free nodes: ``goodluck watch``
 * See free nodes with TITAN V: ``goodluck watch --card 'v'``
-
+* Watch all nodes except the nodes with k series card. 
+``watch -c -n 0.1 "goodluck watch --noicon --card 'all,-k' " ``
 4. Observe what nodes are free in P40 Cluster
 ``goodluck p40_watch``
 5. Wrap your program with tmux 
