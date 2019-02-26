@@ -29,7 +29,9 @@ CARD_MAPPING = {
 }
 
 def check_and_convert_card(cards):
-    cards  = cards
+    if isinstance(cards, str):
+        cards  = [cards]
+
     legal_cards = set()
     for c in cards:
         if c.startswith('-'):
@@ -44,9 +46,8 @@ def check_and_convert_card(cards):
             assert c.upper() in CARD_TYPE_LIST, "Please check your card type input. \n \
                             Legal inputs are 'all' | '1080' | 'm' | 'xp' | 'v' | 'k' | 'v100' | 'p40'"
             legal_cards |= tmp_card_set
+
     return legal_cards
-    # card = CARD_MAPPING[str(card).lower()]
-    # return card
 
 class Luck:
     def __init__(self):
@@ -108,7 +109,6 @@ class Luck:
 
         node = str(node) if isinstance(node, int) else node
         assert not node or len(node)==2, "Node Format is wrong. Like 01, 02, ..., 34"
-
         card = check_and_convert_card(card)
         mapping = {
             'user_cmd': user_cmd,
@@ -166,7 +166,7 @@ class Luck:
             time.sleep(5)
             server.kill_session(session_name)
 
-    def watch(self, ngpu=1, gpumem=0, card='all', noicon=False):
+    def watch(self, ngpu=1, gpumem=0, card=CARD_SET, noicon=False):
         if not noicon:
             chinese_log()
         card = check_and_convert_card(card)
@@ -174,7 +174,7 @@ class Luck:
         node, gpu_idxs, free_nodes, node_with_max_gpu, max_n_gpu, total_gpus = self.allocator.allocate_node(ngpu, self.clusterviewr.node_gpu_info, gpumem, card)
         self.logger.watch_free_node_info(free_nodes, node_with_max_gpu, max_n_gpu, self.clusterviewr.nodes_gpu_type, total_gpus)
 
-    def p40_watch(self, gpumem=0, card='all', noicon=False):
+    def p40_watch(self, gpumem=0, card=CARD_SET, noicon=False):
         self.clusterviewr = P40ClusterViewer()
         self.watch(noicon=noicon)
 
