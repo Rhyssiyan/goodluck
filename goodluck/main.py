@@ -31,9 +31,11 @@ CARD_MAPPING = {
 def check_and_convert_card(cards):
     if isinstance(cards, str):
         cards = cards.split(',')
-
+    elif isinstance(cards, int):
+        cards = [str(cards)]
     legal_cards = set()
     for c in cards:
+        c = str(c)
         if c.startswith('-'):
             c = CARD_MAPPING[c[1:]]
             legal_cards -= set([c])
