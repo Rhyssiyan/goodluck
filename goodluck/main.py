@@ -29,6 +29,7 @@ CARD_MAPPING = {
 }
 
 def check_and_convert_card(cards):
+    # import pdb;pdb.set_trace()
     if isinstance(cards, str):
         cards = cards.split(',')
     elif isinstance(cards, int):
@@ -168,7 +169,7 @@ class Luck:
             time.sleep(5)
             server.kill_session(session_name)
 
-    def watch(self, ngpu=1, gpumem=0, card=CARD_SET, noicon=False):
+    def watch(self, ngpu=1, gpumem=0, card='all', noicon=False):
         if not noicon:
             chinese_log()
         card = check_and_convert_card(card)
@@ -176,7 +177,7 @@ class Luck:
         node, gpu_idxs, free_nodes, node_with_max_gpu, max_n_gpu, total_gpus = self.allocator.allocate_node(ngpu, self.clusterviewr.node_gpu_info, gpumem, card)
         self.logger.watch_free_node_info(free_nodes, node_with_max_gpu, max_n_gpu, self.clusterviewr.nodes_gpu_type, total_gpus)
 
-    def p40_watch(self, gpumem=0, card=CARD_SET, noicon=False):
+    def p40_watch(self, gpumem=0, card='all', noicon=False):
         self.clusterviewr = P40ClusterViewer()
         self.watch(noicon=noicon)
 
