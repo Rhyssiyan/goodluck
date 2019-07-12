@@ -8,14 +8,14 @@ class ClusterViewer:
         self.update_gpu_type()
 
     def update_gpu_type(self):
-        content = requests.get(f"http://10.19.124.11:8899/{self.gpu_page}?id=0").json()  # get gpu info for all nodes
+        content = requests.get(f"http://10.15.89.41:8899/{self.gpu_page}?id=0").json()  # get gpu info for all nodes
         for info in content:
             name = info['hostname'].replace(self.node_prefix, '').replace('node', '')  # leave node no. str
             self.nodes_gpu_type[name] = info['gpus'][0]['name'] #Get gpu type such as titan xp
 
     def update(self):
 
-        content = requests.get(f"http://10.19.124.11:8899/{self.gpu_page}?id=0").json()  # get gpu info for all nodes
+        content = requests.get(f"http://10.15.89.41:8899/{self.gpu_page}?id=0").json()  # get gpu info for all nodes
         for info in content:
             name = info['hostname'].replace(self.node_prefix,'').replace('node','')#leave node no. str
             self.node_gpu_info[name] = info['gpus']
